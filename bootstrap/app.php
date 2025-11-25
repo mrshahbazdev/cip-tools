@@ -3,7 +3,6 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Support\Facades\URL;
 use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -13,36 +12,33 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Yahan aap apne custom middleware register kar sakte hain
+        // Middleware configuration
         $middleware->web(append: [
-            // Agar aap custom tenant handling middleware banayein toh yahan add karen
+            // Agar custom middleware chahiye toh yahan add karen
         ]);
 
-        // Tenancy middleware group (agar needed ho)
+        // Tenancy middleware group
         $middleware->group('tenancy', [
             \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Tenant identification fail hone par redirect karen
+        // Tenant identification fail hone par 404 error dikhayein
         $exceptions->renderable(function (TenantCouldNotBeIdentifiedException $e, $request) {
+            // Simple 404 page return karen
             if ($request->isMethod('get')) {
-                // Production mein redirect karen, local par error dikhayein
-                if (!app()->environment('local')) {
-                    $mainDomain = config('app.url', 'https://cip-tools.de');
-                    return redirect($mainDomain);
-                }
+                return response()->view('errors.404', [], 404);
             }
 
             // API requests ke liye JSON response
             if ($request->expectsJson()) {
                 return response()->json([
                     'error' => 'Tenant not found',
-                    'message' => 'The requested domain could not be identified.'
+                    'message' => 'The requested subdomain does not exist.'
                 ], 404);
             }
 
-            // Local environment mein default error dikhayein
-            return null;
+            // Default 404 response
+            abort(404, 'Subdomain not found');
         });
     })->create();
