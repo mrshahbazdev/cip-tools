@@ -23,11 +23,13 @@ Route::domain('{tenant}.cip-tools.de')->group(function () {
         return "TENANT DASHBOARD - " . tenant()->name;
     })->name('tenant.home');
 
-    Route::get('/admin', function ($tenant) {
-        if (!tenant()) {
+    Route::get('/admin', function () { // $tenant parameter ko hata diya
+        $project = tenant();
+        if (!$project) {
             abort(404, "Tenant not found");
         }
-        return "Tenant Admin Panel: " . tenant()->name;
+        // Return the new admin view
+        return view('tenant.admin', ['project' => $project]); 
     })->name('tenant.admin');
 
     // Payment/Monetization routes (Requires tenant identification)
