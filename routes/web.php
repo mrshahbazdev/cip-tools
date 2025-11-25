@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\PaymentController;
-
+use App\Http\Controllers\TenantHomeController;
 // ==================== CENTRAL DOMAIN ROUTES ====================
 Route::domain('cip-tools.de')->group(function () {
     Route::get('/', function () {
@@ -16,12 +16,7 @@ Route::domain('cip-tools.de')->group(function () {
 
 // ==================== TENANT DOMAIN ROUTES ====================
 Route::domain('{tenant}.cip-tools.de')->group(function () {
-    Route::get('/', function ($tenant) {
-        if (!tenant()) {
-            abort(404, "Tenant '{$tenant}' not found");
-        }
-        return "TENANT DASHBOARD - " . tenant()->name;
-    })->name('tenant.home');
+    Route::get('/', [TenantHomeController::class, 'index'])->name('tenant.home');
 
     Route::get('/admin', function () { // $tenant parameter ko hata diya
         $project = tenant();
