@@ -4,7 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Console\Scheduling\Schedule;
-use App\Console\Commands\CheckTrialExpiry; // Trial Scheduling ke liye
+use App\Console\Commands\CheckTrialExpiry;
 use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedException;
 use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedOnDomainException;
 
@@ -15,14 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withSchedule(function (Schedule $schedule) {
-        // Trial Check Command ko rozana chalana
         $schedule->command(CheckTrialExpiry::class)->dailyAt('00:00');
     })
     ->withMiddleware(function (Middleware $middleware) {
         // Global middleware stack
         $middleware->web(prepend: [
-            // Ye ensure karta hai ke central domain par tenant-specific routes access na hon
-            \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
+            // Sirf tenant domains par hi ye middleware apply karen
         ]);
 
         $middleware->web(append: [
@@ -31,31 +29,41 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // --- Ghosting Fix (Tenant Identification Failed) ---
-
         // Tenant identification failed on domain - show 404
         $exceptions->renderable(function (TenantCouldNotBeIdentifiedOnDomainException $e, $request) {
-            if ($request->isMethod('get')) {
-                return response()->view('errors.404', [
-                    'message' => "The subdomain '{$request->getHost()}' does not exist."
+            $host = $request->getHost();
+
+            // Check if it's actually a subdomain (not main domain)
+            if ($host !== 'cip-tools.de' && str_ends_with($host, '.cip-tools.de')) {
+                if ($request->isMethod('get')) {
+                    return response()->view('errors.404', [
+                        'message' => "The subdomain '{$host}' does not exist."
+                    ], 404);
+                }
+                return response()->json([
+                    'error' => 'Subdomain not found',
+                    'message' => 'The requested subdomain does not exist.'
                 ], 404);
             }
-            return response()->json([
-                'error' => 'Subdomain not found',
-                'message' => 'The requested subdomain does not exist.'
-            ], 404);
+
+            // Agar main domain hai toh default behavior use karen
+            return null;
         });
 
         // Fallback for general tenant identification errors
         $exceptions->renderable(function (TenantCouldNotBeIdentifiedException $e, $request) {
-            if ($request->isMethod('get')) {
-                // Redirect user to the central domain homepage
-                return redirect(\Illuminate\Support\Facades\URL::to('/'));
-            }
-            return response()->json([
-                'error' => 'Tenant not found'
-            ], 404);
-        });
+            $host = $request->getHost();
 
-        // --- End Ghosting Fix ---
+            // Sirf subdomains par redirect karen, main domain par nahi
+            if ($host !== 'cip-tools.de' && str_ends_with($host, '.cip-tools.de')) {
+                if ($request->isMethod('get')) {
+                    return redirect(\Illuminate\Support\Facades\URL::to('/'));
+                }
+                return response()->json([
+                    'error' => 'Tenant not found'
+                ], 404);
+            }
+
+            return null;
+        });
     })->create();
