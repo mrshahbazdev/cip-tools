@@ -5,7 +5,6 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Console\Scheduling\Schedule;
 use App\Console\Commands\CheckTrialExpiry;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedException;
 use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedOnDomainException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -26,15 +25,20 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
         ]);
+
+        // Tenancy middleware group
+        $middleware->group('tenancy', [
+            \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Tenant identification failed on domain - show 404 ONLY for actual subdomains
+        // Tenant identification failed - show 404 for subdomains only
         $exceptions->renderable(function (TenantCouldNotBeIdentifiedOnDomainException $e, $request) {
             $host = $request->getHost();
             $centralDomains = config('tenancy.central_domains', ['cip-tools.de']);
 
-            // Check if it's actually a subdomain (not central domain)
-            if (!in_array($host, $centralDomains) && str_ends_with($host, '.cip-tools.de')) {
+            // Only handle actual subdomains, not central domains
+            if (!in_array($host, $centralDomains)) {
                 if ($request->isMethod('get')) {
                     return response()->view('errors.404', [
                         'message' => "The subdomain '{$host}' does not exist."
@@ -46,25 +50,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 404);
             }
 
-            // Agar central domain hai toh default behavior use karen
-            return null;
-        });
-
-        // Fallback for general tenant identification errors
-        $exceptions->renderable(function (TenantCouldNotBeIdentifiedException $e, $request) {
-            $host = $request->getHost();
-            $centralDomains = config('tenancy.central_domains', ['cip-tools.de']);
-
-            // Sirf actual subdomains par redirect karen
-            if (!in_array($host, $centralDomains) && str_ends_with($host, '.cip-tools.de')) {
-                if ($request->isMethod('get')) {
-                    return redirect('https://cip-tools.de');
-                }
-                return response()->json([
-                    'error' => 'Tenant not found'
-                ], 404);
-            }
-
+            // For central domains, let the normal flow continue
             return null;
         });
     })->create();
