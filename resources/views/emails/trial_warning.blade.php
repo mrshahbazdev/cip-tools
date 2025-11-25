@@ -18,7 +18,7 @@ The 30-day trial period for your **{{ \$projectName }}** project has expired tod
 Please complete the payment process immediately to activate your project and resume service.
 @endif
 
-@component('mail::button', \['url' => \$paymentLink\])
+@component('mail::button', ['url' => $paymentLink])
 Pay Now and Activate
 @endcomponent
 
