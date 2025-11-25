@@ -2,69 +2,55 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegistrationController;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedException;
 use App\Http\Controllers\PaymentController;
-// Main domain routes - only for cip-tools.de
-Route::middleware('web')->group(function () {
-    Route::get('/payment', [PaymentController::class, 'showPaymentForm'])->name('payment.form');
-    Route::post('/subscribe', [PaymentController::class, 'subscribe'])->name('payment.subscribe');
-    Route::post('/invoice', [PaymentController::class, 'generateInvoice'])->name('payment.invoice');
-});
+use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedException;
+
+// --- 1. Central Domain Routes (ONLY cip-tools.de) ---
+// Registration aur Landing page ke liye.
 Route::domain('cip-tools.de')->group(function () {
     Route::get('/', function () {
         return view('welcome');
     });
 
+    // Registration routes
     Route::get('/register-project', [RegistrationController::class, 'create'])->name('register.create');
     Route::post('/register-project', [RegistrationController::class, 'store'])->name('register.store');
 
-    Route::get('/test-tenancy', function () {
-        try {
-            $tenant = tenant();
-            if ($tenant) {
-                return "Tenant is initialized: " . $tenant->name;
-            } else {
-                return "No tenant initialized - Central app";
-            }
-        } catch (TenantCouldNotBeIdentifiedException $e) {
-            return "Tenant not found - should show 404";
-        }
+    // Test route for central app verification
+    Route::get('/test-tenancy-central', function () {
+        return "No tenant initialized - Central app running on: " . request()->getHost();
     });
 });
 
-// Tenant routes - for all subdomains of cip-tools.de
-Route::domain('{tenant}.cip-tools.de')->group(function () {
+// --- 2. Tenant Domain Routes (FOR ALL SUBDOMAINS) ---
+// Payment, Dashboard aur Innovation features ke liye.
+Route::middleware('web')->domain('{tenant}.cip-tools.de')->group(function () {
+
+    // Default tenant homepage
     Route::get('/', function ($tenant) {
-        try {
-            // Tenant automatically initialize ho jayega middleware se
-            $currentTenant = tenant();
-            if ($currentTenant) {
-                return "Tenant Dashboard: " . $currentTenant->name;
-            }
-            abort(404, "Tenant not found");
-        } catch (TenantCouldNotBeIdentifiedException $e) {
-            abort(404, "Subdomain '{$tenant}' does not exist");
+        $currentTenant = tenant();
+        if ($currentTenant) {
+            // Yahan se aap tenant ke dashboard par redirect kar sakte hain
+            return redirect()->route('tenant.dashboard');
         }
+        abort(404, "Tenant not found");
     });
 
-    // Yahan aap tenant-specific routes add kar sakte hain
-    Route::get('/dashboard', function ($tenant) {
+    // Tenant Dashboard
+    Route::get('/admin', function ($tenant) {
         $currentTenant = tenant();
-        return "Dashboard for: " . $currentTenant->name;
-    });
+        return "Tenant Dashboard: " . $currentTenant->name;
+    })->name('tenant.dashboard');
+
+    // Payment/Monetization routes
+    Route::get('/payment', [PaymentController::class, 'showPaymentForm'])->name('payment.form');
+    Route::post('/subscribe', [PaymentController::class, 'subscribe'])->name('payment.subscribe');
+    Route::post('/invoice', [PaymentController::class, 'generateInvoice'])->name('payment.invoice');
 });
 
-// Catch-all route for invalid subdomains
+// --- 3. Fallback (Ghosting handled by bootstrap/app.php) ---
+// Fallback ko ab bilkul simple rakhen, kyunki humne iski logic bootstrap/app.php mein daal di hai.
+// Ye sirf woh requests pakdega jo kisi route se match nahi hoti.
 Route::fallback(function () {
-    $host = request()->getHost();
-    $mainDomain = 'cip-tools.de';
-
-    // Agar subdomain hai lekin exist nahi karta
-    if ($host !== $mainDomain && str_ends_with($host, '.cip-tools.de')) {
-        $subdomain = str_replace('.cip-tools.de', '', $host);
-        abort(404, "Subdomain '{$subdomain}' does not exist.");
-    }
-
-    // Agar koi aur invalid route
-    abort(404, "Page not found");
+    abort(404);
 });
