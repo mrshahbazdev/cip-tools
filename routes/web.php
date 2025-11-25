@@ -30,7 +30,10 @@ Route::domain('{tenant}.cip-tools.de')->group(function () {
         return "Tenant Admin Panel: " . tenant()->name;
     })->name('tenant.admin');
 
-    Route::get('/payment', [PaymentController::class, 'showPaymentForm'])->name('tenant.payment');
+    // Payment/Monetization routes (Requires tenant identification)
+    Route::get('/payment', [PaymentController::class, 'showPaymentForm'])->name('tenant.payment.form');
+    Route::post('/subscribe', [PaymentController::class, 'subscribe'])->name('payment.subscribe');
+    Route::post('/invoice', [PaymentController::class, 'generateInvoice'])->name('payment.invoice');
 });
 
 // ==================== CATCH-ALL ROUTE ====================
