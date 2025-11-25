@@ -17,9 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command(CheckTrialExpiry::class)->dailyAt('00:00');
     })
     ->withMiddleware(function (Middleware $middleware) {
-        // Tenancy middleware globally apply karen
+        // Use our custom middleware instead of the default one
         $middleware->web(append: [
-            \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+            \App\Http\Middleware\InitializeTenancyBySubdomain::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
@@ -27,8 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->renderable(function (TenantCouldNotBeIdentifiedOnDomainException $e, $request) {
             $host = $request->getHost();
 
-            // All invalid subdomains should show 404
-            if (str_ends_with($host, '.cip-tools.de')) {
+            // Only handle actual subdomains
+            if ($host !== 'cip-tools.de' && str_ends_with($host, '.cip-tools.de')) {
                 $subdomain = str_replace('.cip-tools.de', '', $host);
                 return response()->view('errors.404', [
                     'message' => "The subdomain '{$subdomain}' does not exist."
