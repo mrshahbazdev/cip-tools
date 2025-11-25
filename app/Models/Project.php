@@ -4,14 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Stancl\Tenancy\Contracts\TenantWithDatabase; // Updated interface for v3
+use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDomains;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Project extends Model implements TenantWithDatabase // Use TenantWithDatabase for v3
+class Project extends Model implements TenantWithDatabase
 {
-    use HasFactory, HasDatabase, HasDomains; // Both traits are required
+    use HasFactory, HasDatabase, HasDomains;
 
     protected $fillable = [
         'name',
@@ -23,30 +23,60 @@ class Project extends Model implements TenantWithDatabase // Use TenantWithDatab
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Get the name of the tenant key (primary key).
      */
-    protected function casts(): array
+    public function getTenantKeyName(): string
     {
-        return [
-            'trial_ends_at' => 'datetime',
-            'is_active' => 'boolean',
-            'pays_bonus' => 'boolean',
-        ];
+        return 'id';
     }
 
     /**
-     * Relationship with the super admin user
+     * Get the value of the tenant key (primary key).
+     */
+    public function getTenantKey(): string|int
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Get the internal identifier for the tenant.
+     */
+    public function getInternal(string $key): mixed
+    {
+        return $this->getAttribute($key);
+    }
+
+    /**
+     * Set the internal identifier for the tenant.
+     */
+    public function setInternal(string $key, mixed $value): static
+    {
+        $this->setAttribute($key, $value);
+        return $this;
+    }
+
+    /**
+     * Get all the tenant's attributes.
+     */
+    public function getAttributes(): array
+    {
+        return parent::getAttributes();
+    }
+
+    /**
+     * Run callback in tenant's context.
+     * This is required by Stancl Tenancy v3.
+     */
+    public function run(callable $callback)
+    {
+        return tenancy()->initialize($this) ?: $callback();
+    }
+
+    /**
+     * Super Admin ka relationship jo is project ko manage karta hai.
      */
     public function superAdmin(): BelongsTo
     {
         return $this->belongsTo(User::class, 'super_admin_id');
-    }
-
-    /**
-     * Get the custom domain attribute
-     */
-    public function getDomainAttribute(): string
-    {
-        return $this->subdomain . '.' . config('tenancy.central_domains.0');
     }
 }

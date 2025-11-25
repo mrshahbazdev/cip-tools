@@ -25,7 +25,6 @@ return [
         'localhost',
         // Production Domain Shamil (Central App is par chalega)
         'cip-tools.de',
-        'www.cip-tools.de', // Add www subdomain as well
     ],
 
     /**
@@ -36,29 +35,24 @@ return [
         Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
-        // Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper::class, // Uncomment if using Redis
     ],
 
     /**
      * Database tenancy config.
+     * Hum SQLite use kar rahe hain (local par).
      */
     'database' => [
-        'central_connection' => env('DB_CONNECTION', 'mysql'),
+        'central_connection' => env('DB_CONNECTION', 'sqlite'), // Use DB_CONNECTION from .env
 
-        'tenant_connection' => env('DB_CONNECTION', 'mysql'),
-
-        'template_connection' => null,
-
-        'database_managers' => [
-            'mysql' => Stancl\Tenancy\Database\MySQLDatabaseManager::class,
-            'sqlite' => Stancl\Tenancy\Database\SQLiteDatabaseManager::class,
-            'pgsql' => Stancl\Tenancy\Database\PostgreSQLDatabaseManager::class,
-        ],
-
+        'template_tenant_connection' => null,
         'prefix' => 'tenant',
         'suffix' => '',
 
-        'create_database_on_tenant_creation' => true, // Important: Allow auto DB creation
+        'managers' => [
+            'sqlite' => Stancl\Tenancy\TenantDatabaseManagers\SQLiteDatabaseManager::class,
+            'mysql' => Stancl\Tenancy\TenantDatabaseManagers\MySQLDatabaseManager::class,
+            'pgsql' => Stancl\Tenancy\TenantDatabaseManagers\PostgreSQLDatabaseManager::class,
+        ],
     ],
 
     /**
@@ -69,7 +63,7 @@ return [
         'disks' => [
             'local',
             'public',
-            // 's3', // Uncomment if using S3
+            's3',
         ],
         'root_override' => [
             'local' => '%storage_path%/app/',
@@ -80,77 +74,22 @@ return [
     ],
 
     /**
-     * Tenancy middleware identification.
+     * Identification Middleware: Subdomain se Tenant ko pehchanne ke liye.
      */
-    'middleware' => [
-        // Initialize tenancy by domain
-        Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
-
-        // Prevent access to central domains by tenant
-        Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
+    'identification_middleware' => [
+        'web' => [
+            Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+        ],
+        'api' => [
+            // API access ke liye
+        ],
     ],
 
-    /**
-     * Features configuration
-     */
-    'features' => [
-        Stancl\Tenancy\Features\UniversalRoutes::class,
-        Stancl\Tenancy\Features\TenantConfig::class,
-        Stancl\Tenancy\Features\CrossDomainRedirect::class,
-    ],
-
-    /**
-     * Migration parameters
-     */
+    // Baqi settings (Cache, Redis, Features, Routes) default hi rehne dein.
+    'routes' => true,
     'migration_parameters' => [
         '--force' => true,
         '--path' => [database_path('migrations/tenant')],
         '--realpath' => true,
-    ],
-
-    /**
-     * Tenant routes configuration
-     */
-    'routes' => [
-        'prefix' => '/{tenant}',
-    ],
-
-    /**
-     * Cache configuration for tenancy
-     */
-    'cache' => [
-        'tag_base' => 'tenant',
-        'prefix_base' => 'tenant_',
-    ],
-
-    /**
-     * Redis tenancy configuration
-     */
-    'redis' => [
-        'prefix_base' => 'tenant',
-        'prefixed_connections' => [
-            'default',
-        ],
-    ],
-
-    /**
-     * Queue tenancy configuration
-     */
-    'queue' => [
-        'prefix_base' => 'tenant',
-    ],
-
-    /**
-     * Automatic tenant creation and deletion
-     */
-    'tenant_creation' => [
-        'default_database' => env('DB_CONNECTION', 'mysql'),
-    ],
-
-    /**
-     * Tenant deletion
-     */
-    'tenant_deletion' => [
-        'delete_database' => true,
     ],
 ];
