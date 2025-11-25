@@ -23,7 +23,8 @@ class ProjectResource extends Resource
     // Filament V4 uses static properties for configuration
     protected static ?string $model = Project::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+    // FIX: Type definition update to match parent Filament Resource class (BackedEnum|string|null)
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office-2';
     
     // FIX: Type definition update to match parent Filament Resource class (UnitEnum|string|null)
     protected static string | \UnitEnum | null $navigationGroup = 'Project Management';
