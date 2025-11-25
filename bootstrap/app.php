@@ -17,24 +17,24 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command(CheckTrialExpiry::class)->dailyAt('00:00');
     })
     ->withMiddleware(function (Middleware $middleware) {
-        // Custom middleware group for tenancy - only for subdomains
-        $middleware->alias([
-            'tenancy' => \App\Http\Middleware\InitializeTenancyConditionally::class,
+        // Tenancy middleware globally apply karen
+        $middleware->web(append: [
+            \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Tenant identification failed - show 404 ONLY for actual subdomains
+        // Tenant identification failed - show 404 for ALL tenant identification errors
         $exceptions->renderable(function (TenantCouldNotBeIdentifiedOnDomainException $e, $request) {
             $host = $request->getHost();
 
-            // Only handle actual subdomains, not central domains
-            if ($host !== 'cip-tools.de' && str_ends_with($host, '.cip-tools.de')) {
+            // All subdomains that can't be identified should show 404
+            if (str_ends_with($host, '.cip-tools.de')) {
+                $subdomain = str_replace('.cip-tools.de', '', $host);
                 return response()->view('errors.404', [
-                    'message' => "The subdomain '{$host}' does not exist."
+                    'message' => "The subdomain '{$subdomain}' does not exist."
                 ], 404);
             }
 
-            // For central domains, let the normal flow continue
             return null;
         });
     })->create();
