@@ -21,10 +21,10 @@ return [
      * Central domains par Super Admin login aur landing page chalenge.
      */
     'central_domains' => [
-        '127.0.0.1',
-        'localhost',
-        // Production Domain Shamil (Central App is par chalega)
         'cip-tools.de',
+        'www.cip-tools.de',
+        'localhost',
+        '127.0.0.1',
     ],
 
     /**
