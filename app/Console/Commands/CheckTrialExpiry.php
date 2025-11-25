@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Project;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TrialWarningMail; // Mailable class jo humne banaya
 
 class CheckTrialExpiry extends Command
 {
@@ -57,12 +59,17 @@ class CheckTrialExpiry extends Command
         $days = ($daysLeft === 0) ? 'LAST DAY' : "{$daysLeft} days";
 
         foreach ($projects as $project) {
+            // Super Admin ko Project model ke relationship se fetch karein
             $admin = $project->superAdmin;
 
-            // Console par output (For testing only)
-            $this->warn("ALERT: Project {$project->name} ({$admin->email}) has {$days} remaining.");
-
-            // TODO: Next step mein yahan Filament Notification ya Email ka code aayega.
+            // Mail Send Karne ki Logic
+            if ($admin && $admin->email) {
+                // TrialWarningMail Mailable use karein
+                Mail::to($admin->email)->send(new TrialWarningMail($project, $daysLeft));
+                $this->warn("MAIL SENT: Admin {$admin->email} notified (Project: {$project->name}) - {$days} left.");
+            } else {
+                $this->error("ERROR: Admin email not found for project {$project->name}.");
+            }
         }
     }
 }
