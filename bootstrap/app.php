@@ -23,11 +23,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Tenant identification failed - show 404 for ALL tenant identification errors
+        // Tenant identification failed - show 404 for invalid subdomains
         $exceptions->renderable(function (TenantCouldNotBeIdentifiedOnDomainException $e, $request) {
             $host = $request->getHost();
 
-            // All subdomains that can't be identified should show 404
+            // All invalid subdomains should show 404
             if (str_ends_with($host, '.cip-tools.de')) {
                 $subdomain = str_replace('.cip-tools.de', '', $host);
                 return response()->view('errors.404', [

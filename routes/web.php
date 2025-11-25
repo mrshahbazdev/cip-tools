@@ -4,43 +4,46 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\PaymentController;
 
-// ==================== DEBUG ROUTES ====================
-Route::get('/debug-host', function () {
-    $host = request()->getHost();
-    return [
-        'host' => $host,
-        'is_subdomain' => $host !== 'cip-tools.de' && str_ends_with($host, '.cip-tools.de'),
-        'is_central' => $host === 'cip-tools.de',
-        'tenant' => tenant() ? tenant()->name : 'No tenant',
-        'all_server_vars' => [
-            'HTTP_HOST' => $_SERVER['HTTP_HOST'] ?? 'Not set',
-            'SERVER_NAME' => $_SERVER['SERVER_NAME'] ?? 'Not set',
-        ]
-    ];
-});
-
-// ==================== MAIN DOMAIN ROUTES ====================
+// ==================== MAIN WEBSITE ROUTES ====================
+// These work on cip-tools.de (central domain)
 Route::get('/', function () {
-    $host = request()->getHost();
-    if ($host === 'cip-tools.de') {
-        return "MAIN WEBSITE - Host: " . $host;
-    } else {
-        return "INVALID SUBDOMAIN ACCESSED - Host: " . $host . " | This should show 404";
-    }
-});
+    return view('welcome'); // Your main website view
+})->name('home');
 
 Route::get('/register-project', [RegistrationController::class, 'create'])->name('register.create');
 Route::post('/register-project', [RegistrationController::class, 'store'])->name('register.store');
 
-// ==================== CATCH-ALL WITH PROPER TENANCY HANDLING ====================
+// ==================== TENANT ROUTES ====================
+// These automatically work when tenant is initialized (valid subdomains)
+Route::middleware(['web'])->group(function () {
+    // Tenant dashboard
+    Route::get('/admin', function () {
+        if (!tenant()) {
+            abort(404, 'Tenant not found');
+        }
+        return "Tenant Dashboard: " . tenant()->name;
+    })->name('tenant.dashboard');
+
+    // Tenant payment routes
+    Route::get('/payment', [PaymentController::class, 'showPaymentForm'])->name('payment.form');
+    Route::post('/subscribe', [PaymentController::class, 'subscribe'])->name('payment.subscribe');
+
+    // Tenant homepage
+    Route::get('/home', function () {
+        if (!tenant()) {
+            abort(404, 'Tenant not found');
+        }
+        return "Welcome to " . tenant()->name;
+    });
+});
+
+// ==================== CATCH-ALL ROUTE ====================
 Route::fallback(function () {
     $host = request()->getHost();
 
-    // Agar subdomain hai lekin tenant nahi mila, toh 404 dikhao
-    if ($host !== 'cip-tools.de' && str_ends_with($host, '.cip-tools.de')) {
-        abort(404, "Subdomain '" . str_replace('.cip-tools.de', '', $host) . "' does not exist.");
+    if ($host === 'cip-tools.de') {
+        abort(404, 'Page not found on main website');
+    } else {
+        abort(404, 'Page not found');
     }
-
-    // Central domain par normal 404
-    abort(404, 'Page not found');
 });

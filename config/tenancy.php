@@ -23,8 +23,6 @@ return [
     'central_domains' => [
         'cip-tools.de',
         'www.cip-tools.de',
-        'localhost',
-        '127.0.0.1',
     ],
 
     /**
@@ -36,7 +34,11 @@ return [
         Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
     ],
-
+    'features' => [
+        Stancl\Tenancy\Features\UserImpersonation::class,
+        Stancl\Tenancy\Features\TelescopeTags::class,
+        Stancl\Tenancy\Features\UniversalRoutes::class,
+    ],
     /**
      * Database tenancy config.
      * Hum SQLite use kar rahe hain (local par).
