@@ -1,19 +1,19 @@
 @component('mail::message')
 
-# Trial Expiry Alert: {{ \$projectName }}
+# Trial Expiry Alert: {{ $projectName }}
 
-@if (\$daysLeft > 0)
+@if ($daysLeft > 0)
 
-## ⚠️ Attention Required: Only {{ \$daysLeft }} Days Remaining!
+## ⚠️ Attention Required: Only {{ $daysLeft }} Days Remaining!
 
-Your **{{ \$projectName }}** project's 30-day trial period is ending soon. You only have **{{ \$daysLeft }} days** remaining.
+Your **{{ $projectName }}** project's 30-day trial period is ending soon. You only have **{{ $daysLeft }} days** remaining.
 
 Please make an immediate payment to keep your service active and secure your project data.
 @else
 
 ## 🚨 URGENT: Trial Period Has Expired!
 
-The 30-day trial period for your **{{ \$projectName }}** project has expired today. Your access may be suspended at any time.
+The 30-day trial period for your **{{ $projectName }}** project has expired today. Your access may be suspended at any time.
 
 Please complete the payment process immediately to activate your project and resume service.
 @endif
