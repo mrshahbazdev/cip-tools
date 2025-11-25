@@ -16,6 +16,10 @@ Route::domain('cip-tools.de')->group(function () {
 
 // ==================== TENANT DOMAIN ROUTES ====================
 Route::domain('{tenant}.cip-tools.de')->group(function () {
+    Route::get('/login', function () {
+        // Filhaal hum user ko direct Filament login page par bhej rahe hain
+        return redirect()->to(tenant()->subdomain . '.cip-tools.de/admin/login');
+    })->name('tenant.login');
     Route::get('/', [TenantHomeController::class, 'index'])->name('tenant.home');
 
     Route::get('/admin', function () { // $tenant parameter ko hata diya
