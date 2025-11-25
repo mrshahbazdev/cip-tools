@@ -17,24 +17,54 @@ use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth; // Auth facade use karna
 
 class ProjectResource extends Resource
 {
     // Filament V4 uses static properties for configuration
     protected static ?string $model = Project::class;
 
-    // FIX: Type definition update to match parent Filament Resource class (BackedEnum|string|null)
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office-2';
-    
-    // FIX: Type definition update to match parent Filament Resource class (UnitEnum|string|null)
     protected static string | \UnitEnum | null $navigationGroup = 'Project Management';
-    
     protected static ?int $navigationSort = 1;
 
     // Sets the title attribute for global search results
     protected static ?string $recordTitleAttribute = 'name';
 
-    // FIX: Updated method signature to use Schema instead of Form
+    // FIX: Implementing Global Scope to filter resources based on current user
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = Auth::user();
+
+        // Assumption: Agar user Super Admin nahi hai, to sirf uske projects dikhaen.
+        // Kyunki ye 'ProjectResource' hai, aur har project ka ek Super Admin hota hai.
+        // Is tarah se, agar koi normal user 'admin' panel par aata hai, to woh sirf apna data dekhega.
+        
+        // Note: Ideal tarika roles checking (e.g., $user->hasRole('super_admin')) hai,
+        // Lekin filhaal hum sirf 'super_admin_id' se filter karenge.
+
+        // Agar user ka ID maujood hai aur woh 'Super Admin' nahi hai (assuming admin@cip-tools.de is the primary super admin which is managed separately)
+        // Since we don't have roles, we show all data to the main Filament admin user (ID 1)
+        
+        // Temporary Logic: Filter only if the user is not the primary app owner (Admin ID 1/2)
+        // Or simply restrict access to the projects they own (super_admin_id).
+
+        // For now, if the user is logged in, restrict to projects where they are the owner.
+        // Is se har Super Admin/User sirf apne projects ko manage kar sakega.
+        // Yahan par hum assume kar rahe hain ke 'Super Admin' ka matlab woh user hai jisne project register kiya.
+        
+        // NOTE: Agar aap sab projects dikhana chahte hain to is logic ko reverse karein.
+        
+        // Logic: Show all projects if user ID 1 hai (Primary App Admin), Varna sirf apne projects
+        if ($user && $user->id !== 1) { // Assuming primary app owner is ID 1
+            $query->where('super_admin_id', $user->id);
+        }
+
+        return $query;
+    }
+
+
     public static function form(Schema $schema): Schema
     {
         return $schema
