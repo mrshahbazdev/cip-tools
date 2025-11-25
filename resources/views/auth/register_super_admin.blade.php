@@ -4,45 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Registration - CIP-Tools.de</title>
-
+    
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+    
     <style>
         body {
             font-family: 'Inter', sans-serif;
-        }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .btn-gradient {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-        }
-        .btn-gradient:hover {
-            background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
+            background-color: #f8fafc;
         }
     </style>
 </head>
-<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-4">
 
-    <div class="w-full max-w-md glass-card rounded-2xl shadow-2xl overflow-hidden">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
         <!-- Header Section -->
-        <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-center text-white">
-            <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="bg-white border-b border-gray-200 p-6 text-center">
+            <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                 </svg>
             </div>
-            <h1 class="text-2xl font-bold">Start Your Project</h1>
-            <p class="text-blue-100 mt-2">30-day free trial • No credit card required</p>
+            <h1 class="text-2xl font-bold text-gray-900">Start Your Project</h1>
+            <p class="text-gray-600 mt-2">30-day free trial • No credit card required</p>
         </div>
 
         <!-- Form Section -->
@@ -90,9 +75,9 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
                         </div>
-                        <input type="text" name="name" id="name" required value="{{ old('name') }}"
+                        <input type="text" name="name" id="name" required value="{{ old('name') }}" 
                                placeholder="Enter your full name"
-                               class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                               class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white">
                     </div>
                 </div>
 
@@ -107,9 +92,9 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                             </svg>
                         </div>
-                        <input type="email" name="email" id="email" required value="{{ old('email') }}"
+                        <input type="email" name="email" id="email" required value="{{ old('email') }}" 
                                placeholder="your@email.com"
-                               class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                               class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white">
                     </div>
                 </div>
 
@@ -124,21 +109,21 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                             </svg>
                         </div>
-                        <input type="text" name="project_name" id="project_name" required value="{{ old('project_name') }}"
+                        <input type="text" name="project_name" id="project_name" required value="{{ old('project_name') }}" 
                                placeholder="Enter your project name"
-                               class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200">
+                               class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 bg-white">
                     </div>
-                    <p class="mt-2 text-xs text-gray-500 bg-blue-50 p-2 rounded">
-                        Your subdomain will be: <code class="font-mono text-blue-600 bg-blue-100 px-1 rounded">yourproject.cip-tools.de</code>
+                    <p class="mt-2 text-xs text-gray-500 bg-gray-50 p-2 rounded border border-gray-200">
+                        Your subdomain will be: <code class="font-mono text-blue-600 bg-blue-50 px-1 rounded">yourproject.cip-tools.de</code>
                     </p>
                 </div>
 
                 <!-- Bonus System Toggle -->
-                <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-100">
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <div class="flex items-center justify-between">
                         <div class="flex-1">
                             <div class="flex items-center">
-                                <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                                 </svg>
                                 <span class="text-sm font-medium text-gray-900">Enable Bonus System</span>
@@ -157,14 +142,14 @@
                 </div>
 
                 <!-- Terms Notice -->
-                <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                     <div class="flex items-start">
-                        <svg class="w-5 h-5 text-amber-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-5 h-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                         </svg>
                         <div>
-                            <p class="text-sm font-medium text-amber-800">Important Notice</p>
-                            <p class="text-xs text-amber-700 mt-1">
+                            <p class="text-sm font-medium text-yellow-800">Important Notice</p>
+                            <p class="text-xs text-yellow-700 mt-1">
                                 As Super Admin, you will be responsible for bonus payments and data privacy compliance for this project.
                             </p>
                         </div>
@@ -173,12 +158,12 @@
 
                 <!-- Submit Button -->
                 <button type="submit"
-                        class="w-full py-3 px-4 rounded-lg text-white font-semibold btn-gradient focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-200 shadow-lg">
+                        class="w-full py-3 px-4 rounded-lg text-white font-semibold bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-200 shadow-sm">
                     Start 30-Day Free Trial
                 </button>
 
                 <!-- Additional Info -->
-                <div class="text-center">
+                <div class="text-center pt-4 border-t border-gray-200">
                     <p class="text-xs text-gray-500 space-y-1">
                         <span class="block">✅ Full access to all features</span>
                         <span class="block">✅ No setup fees</span>

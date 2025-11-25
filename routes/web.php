@@ -7,7 +7,7 @@ use App\Http\Controllers\PaymentController;
 // ==================== CENTRAL DOMAIN ROUTES ====================
 Route::domain('cip-tools.de')->group(function () {
     Route::get('/', function () {
-        return "MAIN WEBSITE - Central Application";
+        return view('welcome');
     })->name('home');
 
     Route::get('/register-project', [RegistrationController::class, 'create'])->name('register.create');
