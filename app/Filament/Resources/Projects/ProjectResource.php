@@ -4,60 +4,75 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Models\Project;
-use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
+use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 
 class ProjectResource extends Resource
 {
+    // Filament V4 uses static properties for configuration
     protected static ?string $model = Project::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cube';
-
+    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+    
+    // FIX: Type definition update to match parent Filament Resource class (UnitEnum|string|null)
+    protected static string | \UnitEnum | null $navigationGroup = 'Project Management';
+    
     protected static ?int $navigationSort = 1;
 
+    // Sets the title attribute for global search results
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
+                // --- Project Identity ---
+                TextInput::make('name')
                     ->required()
-                    ->maxLength(255)
-                    ->label('Project Name'),
+                    ->maxLength(255),
                 
-                Forms\Components\TextInput::make('subdomain')
-                    ->label('Subdomain')
+                TextInput::make('subdomain')
+                    ->label('Subdomain Slug')
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true),
 
-                Forms\Components\Select::make('super_admin_id')
+                // --- Owner Link ---
+                Select::make('super_admin_id')
                     ->relationship('superAdmin', 'email')
                     ->searchable()
                     ->preload()
-                    ->required()
-                    ->label('Super Admin'),
+                    ->required(),
 
-                Forms\Components\Toggle::make('is_active')
-                    ->label('Active Subscription')
+                // --- Status & Monetization ---
+                Toggle::make('is_active')
+                    ->label('Is Active (Paid Membership)')
+                    ->helperText('Enable this when payment is confirmed (Manual or Automatic).')
                     ->default(false),
                 
-                Forms\Components\DatePicker::make('trial_ends_at')
-                    ->label('Trial Ends At')
+                DatePicker::make('trial_ends_at')
+                    ->label('Trial Expiry Date')
                     ->default(Carbon::now()->addDays(30)),
 
-                Forms\Components\Toggle::make('pays_bonus')
-                    ->label('Bonus System Enabled')
-                    ->default(false),
+                // --- Configuration ---
+                Toggle::make('pays_bonus')
+                    ->label('Bonus System Enabled?')
+                    ->default(false)
+                    ->helperText('Indicates if the Super Admin agreed to pay innovation proposer bonus.'),
 
-                Forms\Components\TextInput::make('slogan')
-                    ->label('Slogan')
+                TextInput::make('slogan')
+                    ->label('Project Slogan/Motto')
                     ->nullable()
                     ->maxLength(255),
             ]);
@@ -67,54 +82,54 @@ class ProjectResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->description(fn (Project $record): string => $record->subdomain . '.cip-tools.de')
+                    ->limit(20),
 
-                Tables\Columns\TextColumn::make('subdomain')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('superAdmin.email')
+                TextColumn::make('superAdmin.email')
                     ->label('Super Admin')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\IconColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->label('Status')
                     ->boolean()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('trial_ends_at')
+                TextColumn::make('trial_ends_at')
                     ->label('Trial Ends')
                     ->date()
-                    ->sortable(),
+                    ->sortable()
+                    ->color(fn (string $state, Project $record): string => 
+                        $record->is_active ? 'success' : 
+                        ($record->trial_ends_at->diffInDays(Carbon::now()) <= 5 ? 'danger' : 'warning')
+                    ),
 
-                Tables\Columns\IconColumn::make('pays_bonus')
+                IconColumn::make('pays_bonus')
                     ->label('Bonus')
                     ->boolean(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('is_active')
+                SelectFilter::make('is_active')
                     ->options([
-                        true => 'Active',
-                        false => 'Inactive',
+                        true => 'Active (Paid)',
+                        false => 'Inactive / Trial',
                     ])
-                    ->label('Status'),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                    ->label('Subscription Status'),
+
+                Filter::make('trial_expiring')
+                    ->query(fn (Builder $query): Builder => $query->where('trial_ends_at', '<=', Carbon::now()->addDays(10)))
+                    ->label('Expiring in 10 Days'),
             ]);
     }
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            // Relation managers can be added here
+        ];
     }
 
     public static function getPages(): array
