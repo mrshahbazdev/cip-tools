@@ -8,6 +8,7 @@ use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDomains;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Stancl\Tenancy\Facades\Tenancy; // Tenancy facade use karna
 
 class Project extends Model implements TenantWithDatabase
 {
@@ -21,6 +22,14 @@ class Project extends Model implements TenantWithDatabase
         'trial_ends_at',
         'is_active',
     ];
+
+    // --- FIX 1: $casts property shamil karna (Date Formatting Ke Liye) ---
+    protected $casts = [
+        'trial_ends_at' => 'datetime', // String se Carbon object mein convert karega
+        'pays_bonus' => 'boolean',
+        'is_active' => 'boolean',
+    ];
+    // ------------------------------------------
 
     /**
      * Get the name of the tenant key (primary key).
@@ -65,11 +74,12 @@ class Project extends Model implements TenantWithDatabase
 
     /**
      * Run callback in tenant's context.
-     * This is required by Stancl Tenancy v3.
+     * FIX 2: Correct Tenancy V3 run implementation.
      */
     public function run(callable $callback)
     {
-        return tenancy()->initialize($this) ?: $callback();
+        // Fix: run method ko Base Tenant contract ke liye theek tareeqay se implement karna
+        return Tenancy::initialize($this)->run($callback);
     }
 
     /**
