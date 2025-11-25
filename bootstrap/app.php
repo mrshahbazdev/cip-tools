@@ -17,17 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command(CheckTrialExpiry::class)->dailyAt('00:00');
     })
     ->withMiddleware(function (Middleware $middleware) {
-        // Use our custom middleware instead of the default one
         $middleware->web(append: [
             \App\Http\Middleware\InitializeTenancyBySubdomain::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Tenant identification failed - show 404 for invalid subdomains
         $exceptions->renderable(function (TenantCouldNotBeIdentifiedOnDomainException $e, $request) {
             $host = $request->getHost();
 
-            // Only handle actual subdomains
             if ($host !== 'cip-tools.de' && str_ends_with($host, '.cip-tools.de')) {
                 $subdomain = str_replace('.cip-tools.de', '', $host);
                 return response()->view('errors.404', [
