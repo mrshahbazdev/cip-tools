@@ -6,12 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Stancl\Tenancy\Contracts\TenantWithDomains; // Zaroori Interface
 use Stancl\Tenancy\Database\Concerns\HasDomains; // Zaroori Trait
-use Stancl\Tenancy\Database\Concerns\IsTenant; // Zaroori Trait
+use Illuminate\Database\Eloquent\Factories\HasFactory; // Filament aur testing ke liye
 
-class Project extends Model implements TenantWithDomains // <--- TenantWithDomains Implement Karein
+class Project extends Model implements TenantWithDomains // <--- Interface implement karein
 {
-    // Tenancy ke liye ye dono traits zaroori hain
-    use HasDomains, IsTenant;
+    use HasFactory, HasDomains; // <--- Sirf HasDomains rakhen, IsTenant hata diya
 
     // Ye fields mass assignment ke liye allow ki gayi hain
     protected $fillable = [
@@ -21,7 +20,6 @@ class Project extends Model implements TenantWithDomains // <--- TenantWithDomai
         'pays_bonus',
         'trial_ends_at',
         'is_active',
-        // Aap baad mein logo, slogan aur baki fields yahan add karenge
     ];
 
     /**
