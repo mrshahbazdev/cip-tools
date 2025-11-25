@@ -3,9 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\URL;
-use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedException;
-use Stancl\Tenancy\Facades\Tenancy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -14,7 +11,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Khaali chhod dein - exception handling bootstrap/app.php mein hogi
     }
 
     /**
@@ -22,10 +19,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Tenant identification failed hone par home page par redirect karein
-        Tenancy::identifyTenantOnFail(function (TenantCouldNotBeIdentifiedException $exception) {
-            // User ko main domain ke landing page par bhej dein
-            return redirect(URL::to('/'));
-        });
+        // Khaali chhod dein - exception handling bootstrap/app.php mein hogi
     }
 }
