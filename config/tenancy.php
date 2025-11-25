@@ -10,11 +10,11 @@ return [
      * Tenant model used to store tenants.
      * Aapka Project model yahan define kiya gaya hai.
      */
-    'tenant_model' => Project::class,
+    'tenant_model' => \App\Models\Project::class,
 
     'id_generator' => Stancl\Tenancy\UUIDGenerator::class,
 
-    'domain_model' => Stancl\Tenancy\Database\Models\Domain::class,
+    'domain_model' => \Stancl\Tenancy\Database\Models\Domain::class,
 
     /**
      * The list of domains hosting your central app.
