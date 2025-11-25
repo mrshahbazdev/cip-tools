@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 use Stancl\Tenancy\Facades\Tenancy; // Tenancy package ke liye zaroori
 
 class RegistrationController extends Controller
@@ -30,6 +31,7 @@ class RegistrationController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'project_name' => 'required|string|unique:projects,name',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         DB::beginTransaction();
@@ -38,7 +40,7 @@ class RegistrationController extends Controller
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => bcrypt(Str::random(10)),
+                'password' => Hash::make($request->password), 
             ]);
 
             // 3. Project Model Banana
