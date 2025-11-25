@@ -18,11 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command(CheckTrialExpiry::class)->dailyAt('00:00');
     })
     ->withMiddleware(function (Middleware $middleware) {
-        // Global middleware stack
-        $middleware->web(prepend: [
-            \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
-        ]);
-
+        // Global middleware stack - ONLY InitializeTenancyByDomain use karen
         $middleware->web(append: [
             \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
         ]);
@@ -31,10 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Tenant identification failed on domain - show 404 ONLY for actual subdomains
         $exceptions->renderable(function (TenantCouldNotBeIdentifiedOnDomainException $e, $request) {
             $host = $request->getHost();
-            $centralDomains = ['cip-tools.de', 'www.cip-tools.de'];
 
             // Check if it's actually a subdomain (not central domain)
-            if (!in_array($host, $centralDomains) && str_ends_with($host, '.cip-tools.de')) {
+            if ($host !== 'cip-tools.de' && str_ends_with($host, '.cip-tools.de')) {
                 if ($request->isMethod('get')) {
                     return response()->view('errors.404', [
                         'message' => "The subdomain '{$host}' does not exist."
@@ -53,10 +48,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Fallback for general tenant identification errors
         $exceptions->renderable(function (TenantCouldNotBeIdentifiedException $e, $request) {
             $host = $request->getHost();
-            $centralDomains = ['cip-tools.de', 'www.cip-tools.de'];
 
             // Sirf actual subdomains par redirect karen
-            if (!in_array($host, $centralDomains) && str_ends_with($host, '.cip-tools.de')) {
+            if ($host !== 'cip-tools.de' && str_ends_with($host, '.cip-tools.de')) {
                 if ($request->isMethod('get')) {
                     return redirect('https://cip-tools.de');
                 }

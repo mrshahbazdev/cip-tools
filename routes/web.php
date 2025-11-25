@@ -54,3 +54,15 @@ Route::middleware('web')->domain('{tenant}.cip-tools.de')->group(function () {
 Route::fallback(function () {
     abort(404);
 });
+// Test route to check what's happening
+Route::get('/debug-host', function () {
+    $host = request()->getHost();
+    $tenant = tenant();
+
+    return [
+        'host' => $host,
+        'tenant' => $tenant ? $tenant->name : 'No tenant',
+        'is_central_domain' => $host === 'cip-tools.de',
+        'is_subdomain' => str_ends_with($host, '.cip-tools.de') && $host !== 'cip-tools.de'
+    ];
+});
