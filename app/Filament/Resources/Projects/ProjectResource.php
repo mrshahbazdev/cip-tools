@@ -8,7 +8,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema; // FIX: Replaced Form with Schema
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -34,10 +34,11 @@ class ProjectResource extends Resource
     // Sets the title attribute for global search results
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function form(Form $form): Form
+    // FIX: Updated method signature to use Schema instead of Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([ // FIX: Using components() for Schema definition
                 // --- Project Identity ---
                 TextInput::make('name')
                     ->required()
