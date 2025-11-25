@@ -17,19 +17,18 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command(CheckTrialExpiry::class)->dailyAt('00:00');
     })
     ->withMiddleware(function (Middleware $middleware) {
-        // Sirf InitializeTenancyByDomain use karen, PreventAccessFromCentralDomains nahi
-        $middleware->web(append: [
-            \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+        // Custom middleware group for tenancy - only for subdomains
+        $middleware->alias([
+            'tenancy' => \App\Http\Middleware\InitializeTenancyConditionally::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Tenant identification failed - show 404 ONLY for actual subdomains
         $exceptions->renderable(function (TenantCouldNotBeIdentifiedOnDomainException $e, $request) {
             $host = $request->getHost();
-            $centralDomains = ['cip-tools.de', 'www.cip-tools.de'];
 
             // Only handle actual subdomains, not central domains
-            if (!in_array($host, $centralDomains) && str_ends_with($host, '.cip-tools.de')) {
+            if ($host !== 'cip-tools.de' && str_ends_with($host, '.cip-tools.de')) {
                 return response()->view('errors.404', [
                     'message' => "The subdomain '{$host}' does not exist."
                 ], 404);
