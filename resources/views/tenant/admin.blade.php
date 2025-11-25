@@ -57,8 +57,8 @@
                     <p class="text-red-600 font-bold text-2xl">Payment Pending</p>
                     <p class="text-gray-500 mt-2">
                         Aapka trial abhi jari hai ya khatam ho chuka hai. 
-                        <a href="{{ route('tenant.payment.form') }}" class="text-indigo-600 hover:underline font-medium">Payment Page</a> par jaa kar activate karein.
-                    </p>
+                        <a href="{{ route('tenant.payment.form', ['tenant' => $project->subdomain]) }}" 
+                        class="text-indigo-600 hover:underline font-medium">Payment Page</a>                    </p>
                     <p class="text-xs text-red-400 mt-1">Trial ends: {{ $project->trial_ends_at?->format('d M, Y') ?? 'N/A' }}</p>
                 @endif
             </div>

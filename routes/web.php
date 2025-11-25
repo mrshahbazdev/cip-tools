@@ -28,9 +28,9 @@ Route::domain('{tenant}.cip-tools.de')->group(function () {
     })->name('tenant.admin');
 
     // Payment/Monetization routes (Requires tenant identification)
-    Route::get('/payment', [PaymentController::class, 'showPaymentForm'])->name('tenant.payment.form');
-    Route::post('/subscribe', [PaymentController::class, 'subscribe'])->name('payment.subscribe');
-    Route::post('/invoice', [PaymentController::class, 'generateInvoice'])->name('payment.invoice');
+        Route::get('/payment', [PaymentController::class, 'showPaymentForm'])->name('tenant.payment.form');
+        Route::post('/subscribe', [PaymentController::class, 'subscribe'])->name('payment.subscribe');
+        Route::post('/invoice', [PaymentController::class, 'generateInvoice'])->name('payment.invoice');
 });
 
 // ==================== CATCH-ALL ROUTE ====================
