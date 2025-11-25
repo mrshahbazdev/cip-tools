@@ -16,9 +16,7 @@ class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-office';
-
-    protected static ?string $navigationLabel = 'Projects';
+    protected static ?string $navigationIcon = 'heroicon-o-cube';
 
     protected static ?int $navigationSort = 1;
 
@@ -28,7 +26,6 @@ class ProjectResource extends Resource
     {
         return $form
             ->schema([
-                // Project Identity
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255)
@@ -38,10 +35,8 @@ class ProjectResource extends Resource
                     ->label('Subdomain')
                     ->required()
                     ->maxLength(255)
-                    ->unique(ignoreRecord: true)
-                    ->helperText('This will create: subdomain.cip-tools.de'),
+                    ->unique(ignoreRecord: true),
 
-                // Owner Link
                 Forms\Components\Select::make('super_admin_id')
                     ->relationship('superAdmin', 'email')
                     ->searchable()
@@ -49,21 +44,17 @@ class ProjectResource extends Resource
                     ->required()
                     ->label('Super Admin'),
 
-                // Status & Monetization
                 Forms\Components\Toggle::make('is_active')
                     ->label('Active Subscription')
-                    ->helperText('Enable when payment is confirmed')
                     ->default(false),
                 
                 Forms\Components\DatePicker::make('trial_ends_at')
                     ->label('Trial Ends At')
                     ->default(Carbon::now()->addDays(30)),
 
-                // Configuration
                 Forms\Components\Toggle::make('pays_bonus')
                     ->label('Bonus System Enabled')
-                    ->default(false)
-                    ->helperText('Pay bonuses for implemented innovations'),
+                    ->default(false),
 
                 Forms\Components\TextInput::make('slogan')
                     ->label('Slogan')
@@ -78,9 +69,11 @@ class ProjectResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
-                    ->sortable()
-                    ->description(fn (Project $record): string => $record->subdomain . '.cip-tools.de')
-                    ->limit(20),
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('subdomain')
+                    ->searchable()
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('superAdmin.email')
                     ->label('Super Admin')
@@ -90,44 +83,27 @@ class ProjectResource extends Resource
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Status')
                     ->boolean()
-                    ->sortable()
-                    ->trueIcon('heroicon-o-check-badge')
-                    ->falseIcon('heroicon-o-x-mark'),
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('trial_ends_at')
                     ->label('Trial Ends')
                     ->date()
-                    ->sortable()
-                    ->color(fn (Project $record): string => 
-                        $record->is_active ? 'success' : 
-                        ($record->trial_ends_at?->diffInDays(Carbon::now()) <= 5 ? 'danger' : 'warning')
-                    ),
+                    ->sortable(),
 
                 Tables\Columns\IconColumn::make('pays_bonus')
                     ->label('Bonus')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-currency-dollar')
-                    ->falseIcon('heroicon-o-x-mark'),
+                    ->boolean(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('is_active')
                     ->options([
-                        true => 'Active (Paid)',
-                        false => 'Inactive / Trial',
+                        true => 'Active',
+                        false => 'Inactive',
                     ])
-                    ->label('Subscription Status'),
-
-                Tables\Filters\Filter::make('trial_expiring')
-                    ->query(fn (Builder $query): Builder => $query->where('trial_ends_at', '<=', Carbon::now()->addDays(10)))
-                    ->label('Expiring in 10 Days'),
-                    
-                Tables\Filters\Filter::make('bonus_enabled')
-                    ->query(fn (Builder $query): Builder => $query->where('pays_bonus', true))
-                    ->label('Bonus System Enabled'),
+                    ->label('Status'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -138,9 +114,7 @@ class ProjectResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            // Relation managers can be added here
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -150,15 +124,5 @@ class ProjectResource extends Resource
             'create' => Pages\CreateProject::route('/create'),
             'edit' => Pages\EditProject::route('/{record}/edit'),
         ];
-    }
-    
-    public static function getNavigationBadge(): ?string
-    {
-        return static::getModel()::count();
-    }
-    
-    public static function getNavigationBadgeColor(): ?string
-    {
-        return 'primary';
     }
 }
