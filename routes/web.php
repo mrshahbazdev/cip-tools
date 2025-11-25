@@ -3,8 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegistrationController;
 use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedException;
-
+use App\Http\Controllers\PaymentController;
 // Main domain routes - only for cip-tools.de
+Route::middleware('web')->group(function () {
+    Route::get('/payment', [PaymentController::class, 'showPaymentForm'])->name('payment.form');
+    Route::post('/subscribe', [PaymentController::class, 'subscribe'])->name('payment.subscribe');
+    Route::post('/invoice', [PaymentController::class, 'generateInvoice'])->name('payment.invoice');
+});
 Route::domain('cip-tools.de')->group(function () {
     Route::get('/', function () {
         return view('welcome');
