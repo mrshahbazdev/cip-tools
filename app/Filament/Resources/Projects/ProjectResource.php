@@ -4,19 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Models\Project;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
+use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
-use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 
 class ProjectResource extends Resource
@@ -24,9 +17,9 @@ class ProjectResource extends Resource
     protected static ?string $model = Project::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
-    
-    protected static ?string $navigationGroup = 'Project Management';
-    
+
+    protected static ?string $navigationLabel = 'Projects';
+
     protected static ?int $navigationSort = 1;
 
     protected static ?string $recordTitleAttribute = 'name';
@@ -36,12 +29,12 @@ class ProjectResource extends Resource
         return $form
             ->schema([
                 // Project Identity
-                TextInput::make('name')
+                Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255)
                     ->label('Project Name'),
                 
-                TextInput::make('subdomain')
+                Forms\Components\TextInput::make('subdomain')
                     ->label('Subdomain')
                     ->required()
                     ->maxLength(255)
@@ -49,7 +42,7 @@ class ProjectResource extends Resource
                     ->helperText('This will create: subdomain.cip-tools.de'),
 
                 // Owner Link
-                Select::make('super_admin_id')
+                Forms\Components\Select::make('super_admin_id')
                     ->relationship('superAdmin', 'email')
                     ->searchable()
                     ->preload()
@@ -57,22 +50,22 @@ class ProjectResource extends Resource
                     ->label('Super Admin'),
 
                 // Status & Monetization
-                Toggle::make('is_active')
+                Forms\Components\Toggle::make('is_active')
                     ->label('Active Subscription')
                     ->helperText('Enable when payment is confirmed')
                     ->default(false),
                 
-                DatePicker::make('trial_ends_at')
+                Forms\Components\DatePicker::make('trial_ends_at')
                     ->label('Trial Ends At')
                     ->default(Carbon::now()->addDays(30)),
 
                 // Configuration
-                Toggle::make('pays_bonus')
+                Forms\Components\Toggle::make('pays_bonus')
                     ->label('Bonus System Enabled')
                     ->default(false)
                     ->helperText('Pay bonuses for implemented innovations'),
 
-                TextInput::make('slogan')
+                Forms\Components\TextInput::make('slogan')
                     ->label('Slogan')
                     ->nullable()
                     ->maxLength(255),
@@ -83,25 +76,25 @@ class ProjectResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')
+                Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable()
                     ->description(fn (Project $record): string => $record->subdomain . '.cip-tools.de')
                     ->limit(20),
 
-                TextColumn::make('superAdmin.email')
+                Tables\Columns\TextColumn::make('superAdmin.email')
                     ->label('Super Admin')
                     ->searchable()
                     ->sortable(),
 
-                IconColumn::make('is_active')
+                Tables\Columns\IconColumn::make('is_active')
                     ->label('Status')
                     ->boolean()
                     ->sortable()
                     ->trueIcon('heroicon-o-check-badge')
                     ->falseIcon('heroicon-o-x-mark'),
 
-                TextColumn::make('trial_ends_at')
+                Tables\Columns\TextColumn::make('trial_ends_at')
                     ->label('Trial Ends')
                     ->date()
                     ->sortable()
@@ -110,25 +103,25 @@ class ProjectResource extends Resource
                         ($record->trial_ends_at?->diffInDays(Carbon::now()) <= 5 ? 'danger' : 'warning')
                     ),
 
-                IconColumn::make('pays_bonus')
+                Tables\Columns\IconColumn::make('pays_bonus')
                     ->label('Bonus')
                     ->boolean()
                     ->trueIcon('heroicon-o-currency-dollar')
                     ->falseIcon('heroicon-o-x-mark'),
             ])
             ->filters([
-                SelectFilter::make('is_active')
+                Tables\Filters\SelectFilter::make('is_active')
                     ->options([
                         true => 'Active (Paid)',
                         false => 'Inactive / Trial',
                     ])
                     ->label('Subscription Status'),
 
-                Filter::make('trial_expiring')
+                Tables\Filters\Filter::make('trial_expiring')
                     ->query(fn (Builder $query): Builder => $query->where('trial_ends_at', '<=', Carbon::now()->addDays(10)))
                     ->label('Expiring in 10 Days'),
                     
-                Filter::make('bonus_enabled')
+                Tables\Filters\Filter::make('bonus_enabled')
                     ->query(fn (Builder $query): Builder => $query->where('pays_bonus', true))
                     ->label('Bonus System Enabled'),
             ])
