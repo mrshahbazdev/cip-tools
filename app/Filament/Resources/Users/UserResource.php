@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Users; // FIX: Namespace updated to match the file path
 
-use App\Filament\Resources\UserResource\Pages;
+use App\Filament\Resources\Users\Pages; // FIX: Pages ko sahih tarah se import kiya
 use App\Models\User;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -14,7 +14,6 @@ use Filament\Tables\Filters\TernaryFilter; // TernaryFilter ke liye zaroori
 use Illuminate\Support\Carbon;
 use Filament\Support\Enums\IconSize; // Icon size ke liye
 use Filament\Schemas\Schema; // FIX: Schema class import kiya
-use Filament\Forms\Form; // Ye use statement hata diya jayega
 
 class UserResource extends Resource
 {
