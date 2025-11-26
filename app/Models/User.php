@@ -9,10 +9,13 @@ use Illuminate\Notifications\Notifiable;
 use App\Models\Project;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Cashier\Billable; // Cashier ke liye zaroori
+use Stancl\Tenancy\Facades\Tenancy; // Tenancy check ke liye
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, Billable; 
+
+    // ... (baqi properties jaisa ke fillable, hidden, casts)
 
     /**
      * The attributes that are mass assignable.
@@ -60,8 +63,24 @@ class User extends Authenticatable
      */
     public function canAccessPanel(\Filament\Panel $panel): bool
     {
-        // Central Admin Panel ko sirf wahi users access kar saken jin ka role is_super_admin hai.
-        // Tenant Panel (subdomain par) ko koi bhi authenticated user access kar sakta hai.
-        return $this->is_super_admin;
+        // 1. Central Admin Panel Protection
+        if ($panel->getId() === 'admin') {
+            return $this->is_super_admin;
+        }
+
+        // 2. Tenant Panel Protection (Crucial Fix)
+        // Agar yeh Tenant ki request hai (aur tenant initialize ho chuka hai)
+        if (Tenancy::initialized()) {
+            $currentTenant = tenant();
+            
+            // Check if the user is the Super Admin (owner) of the current tenant
+            if ($this->id !== $currentTenant->super_admin_id) {
+                // Agar user owner nahi hai, to access deny karein
+                return false; 
+            }
+        }
+        
+        // Agar user Central Super Admin hai ya current Tenant ka owner hai, to access grant karein.
+        return true; 
     }
 }
