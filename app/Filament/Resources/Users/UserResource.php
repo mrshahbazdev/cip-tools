@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\Users; // FIX: Namespace updated to match the file path
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
