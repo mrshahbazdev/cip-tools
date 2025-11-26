@@ -6,7 +6,6 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
@@ -14,25 +13,28 @@ use Filament\Tables\Table;
 use Filament\Tables\Filters\TernaryFilter; // TernaryFilter ke liye zaroori
 use Illuminate\Support\Carbon;
 use Filament\Support\Enums\IconSize; // Icon size ke liye
+use Filament\Schemas\Schema; // FIX: Schema class import kiya
+use Filament\Forms\Form; // Ye use statement hata diya jayega
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    // FIX 1: Navigation Icon Type Update
+    // FIX 1: Navigation Icon Type Update (BackedEnum|string|null)
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
     
-    // FIX 2: Navigation Group Type Update
+    // FIX 2: Navigation Group Type Update (UnitEnum|string|null)
     protected static string | \UnitEnum | null $navigationGroup = 'Project Management';
     
     protected static ?int $navigationSort = 3;
 
     protected static ?string $recordTitleAttribute = 'email'; 
 
-    public static function form(Form $form): Form
+    // FIX 3: Signature change from Form to Schema
+    public static function form(Schema $schema): Schema 
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([ // FIX: Schema method uses components()
                 TextInput::make('name')
                     ->required()
                     ->maxLength(255),
