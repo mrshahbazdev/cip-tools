@@ -37,29 +37,17 @@ class ProjectResource extends Resource
         $query = parent::getEloquentQuery();
         $user = Auth::user();
 
-        // Assumption: Agar user Super Admin nahi hai, to sirf uske projects dikhaen.
-        // Kyunki ye 'ProjectResource' hai, aur har project ka ek Super Admin hota hai.
-        // Is tarah se, agar koi normal user 'admin' panel par aata hai, to woh sirf apna data dekhega.
+        // Assumption: The first user (ID 1) created via make:filament-user is the "App Owner" 
+        // who needs to see all projects for management and billing.
         
-        // Note: Ideal tarika roles checking (e.g., $user->hasRole('super_admin')) hai,
-        // Lekin filhaal hum sirf 'super_admin_id' se filter karenge.
-
-        // Agar user ka ID maujood hai aur woh 'Super Admin' nahi hai (assuming admin@cip-tools.de is the primary super admin which is managed separately)
-        // Since we don't have roles, we show all data to the main Filament admin user (ID 1)
-        
-        // Temporary Logic: Filter only if the user is not the primary app owner (Admin ID 1/2)
-        // Or simply restrict access to the projects they own (super_admin_id).
-
-        // For now, if the user is logged in, restrict to projects where they are the owner.
-        // Is se har Super Admin/User sirf apne projects ko manage kar sakega.
-        // Yahan par hum assume kar rahe hain ke 'Super Admin' ka matlab woh user hai jisne project register kiya.
-        
-        // NOTE: Agar aap sab projects dikhana chahte hain to is logic ko reverse karein.
-        
-        // Logic: Show all projects if user ID 1 hai (Primary App Admin), Varna sirf apne projects
-        if ($user && $user->id !== 1) { // Assuming primary app owner is ID 1
+        // Agar user login hai aur woh primary Filament Admin nahi hai (ID 1/2)
+        // to sirf uske apne projects dikhaen (jahan woh Super Admin hai)
+        if ($user && $user->id !== 1) { 
+            // Note: Agar primary admin ka ID 1 ke bajaye kuch aur hai, to isay badlen.
             $query->where('super_admin_id', $user->id);
         }
+
+        // Agar user ID 1 hai (Primary Super Admin), to woh 'parent::getEloquentQuery()' (sabhi projects) dekhega.
 
         return $query;
     }
