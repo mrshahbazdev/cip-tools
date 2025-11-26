@@ -11,16 +11,23 @@ use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\TernaryFilter; // TernaryFilter ke liye zaroori
+use Illuminate\Support\Carbon;
+use Filament\Support\Enums\IconSize; // Icon size ke liye
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
-    protected static ?string $navigationGroup = 'Project Management';
-    protected static ?int $navigationSort = 3; // Projects ke baad aayega
+    // FIX 1: Navigation Icon Type Update
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
+    
+    // FIX 2: Navigation Group Type Update
+    protected static string | \UnitEnum | null $navigationGroup = 'Project Management';
+    
+    protected static ?int $navigationSort = 3;
 
-    protected static ?string $recordTitleAttribute = 'email'; // Title email hoga
+    protected static ?string $recordTitleAttribute = 'email'; 
 
     public static function form(Form $form): Form
     {
@@ -71,7 +78,7 @@ class UserResource extends Resource
             ])
             ->filters([
                 // Filter for Super Admins
-                \Filament\Tables\Filters\TernaryFilter::make('is_super_admin')
+                TernaryFilter::make('is_super_admin') // Use of TernaryFilter
                     ->label('Global Admin')
                     ->default(null),
             ]);
